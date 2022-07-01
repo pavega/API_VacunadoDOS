@@ -5,6 +5,7 @@ using vacunadosAPI.Util;
 
 namespace vacunadosAPI.Controllers
 {
+
     [Route("/game/")]
     [ApiController]
     public class SetUp : Controller
@@ -29,18 +30,24 @@ namespace vacunadosAPI.Controllers
             return null;
         }
 
+
+        //ERROR 400: NO RECIBIÓ PARÁMETROS
+        //ERROR 406: LA PARTIDA CON ESE NOMBRE EXISTE ACTUALMENTE
         [SwaggerOperation(Summary = "Create new game",
                          Description = "Create a new game. A header 'name' should be used to indicate the game owner and identity to use forward")]
         [HttpPost("create")]
-        public async Task<ActionResult<Game>> create(string owner, string name, string password) {
+        public async Task<ActionResult<Game>> create([FromHeader]string owner, [FromBody]NewGameRequest gameRequest) {
             String matchName = Utility.generateRandomString();
             Game newGame = new Game();
-            newGame.name = name;
+            newGame.name = gameRequest.name;
             newGame.owner = owner;
-            newGame.password = password;
+            newGame.password = gameRequest.password;
             newGame.gameId = matchName;
+            newGame.players = new string[]{ };
+            newGame.psychoWin = new List<bool>();
+            newGame.psychos = new List<string>();
             newGame.status = "Lobby";
-            if (Utility.alreadyExist(name))
+            if (Utility.alreadyExist(gameRequest.name))
             {
                 return StatusCode(406, "There is already a game called with this name");
             }
