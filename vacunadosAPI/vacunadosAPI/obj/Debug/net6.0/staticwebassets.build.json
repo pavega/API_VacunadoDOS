@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "pVwtnIIgVmaNz1PAKliWTLcwdO4vQpsWlAhP2vs9z9c=",
+  "Source": "vacunadosAPI",
+  "BasePath": "_content/vacunadosAPI",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
