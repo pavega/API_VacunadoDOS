@@ -16,7 +16,7 @@
         
         public List<bool> psychoWin { get; set; } = null!;
 
-        public string status = null!;
+        public string status { get; set; } = null!;
 
     }
 }

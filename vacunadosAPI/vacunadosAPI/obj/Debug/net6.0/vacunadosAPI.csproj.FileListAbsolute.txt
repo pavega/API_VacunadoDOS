@@ -26,3 +26,7 @@ D:\Lenguajes\APIRedes\API_VacunadoDOS\vacunadosAPI\vacunadosAPI\obj\Debug\net6.0
 D:\Lenguajes\APIRedes\API_VacunadoDOS\vacunadosAPI\vacunadosAPI\obj\Debug\net6.0\vacunadosAPI.genruntimeconfig.cache
 D:\Lenguajes\APIRedes\API_VacunadoDOS\vacunadosAPI\vacunadosAPI\obj\Debug\net6.0\ref\vacunadosAPI.dll
 D:\Lenguajes\APIRedes\API_VacunadoDOS\vacunadosAPI\vacunadosAPI\bin\Debug\net6.0\Swashbuckle.AspNetCore.Annotations.dll
+D:\Lenguajes\APIRedes\API_VacunadoDOS\vacunadosAPI\vacunadosAPI\bin\Debug\net6.0\System.Net.Http.Formatting.dll
+D:\Lenguajes\APIRedes\API_VacunadoDOS\vacunadosAPI\vacunadosAPI\bin\Debug\net6.0\System.Web.Http.dll
+D:\Lenguajes\APIRedes\API_VacunadoDOS\vacunadosAPI\vacunadosAPI\bin\Debug\net6.0\Newtonsoft.Json.dll
+D:\Lenguajes\APIRedes\API_VacunadoDOS\vacunadosAPI\vacunadosAPI\bin\Debug\net6.0\Newtonsoft.Json.Bson.dll
