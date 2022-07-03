@@ -92,6 +92,7 @@ namespace vacunadosAPI.Controllers
 
 
 
+        //Name refears to owner and its password
         [HttpHead("{gameId}/start")]
         [SwaggerOperation(Summary = "Starts the game",
                           Description = "If you are the game owners, it will start the game")]
@@ -110,7 +111,7 @@ namespace vacunadosAPI.Controllers
                         length =  Utility.gameList.ElementAt(i).rounds.Count;
                         round.id = length;
                         round.leader = Utility.getRoundLeader(Utility.gameList.ElementAt(i).players);
-                        round.group = new List<string>();
+                        round.group = new List<Proposal>();
                         Utility.gameList.ElementAt(i).rounds.Insert(length, round);
                         return StatusCode(200, "Game has started");
                     }
@@ -139,10 +140,11 @@ namespace vacunadosAPI.Controllers
         [HttpPost("{gameId}/group")]
         [SwaggerOperation(Summary = "Group proposal",
                           Description = "The round leader can propose a group for the current round")]
-        public async Task<ActionResult<Game>> createGroup([FromRoute] string gameId, [FromHeader] string name, [FromHeader] string password, [FromBody] List<string> group)
+        public async Task<ActionResult<Game>> createGroup([FromRoute] string gameId, [FromHeader] string name, [FromHeader] string password, [FromBody] Group group)
         {
             Round round = new Round();
-            int length;
+
+            /*int length;
             for (int i = 0; i < Utility.gameList.Count; i++)
             {
                 if (Utility.gameList.ElementAt(i).gameId == gameId && Utility.gameList.ElementAt(i).password == password)
@@ -154,8 +156,15 @@ namespace vacunadosAPI.Controllers
                             if (Utility.getRoundGroup(Utility.gameList.ElementAt(i).rounds.Count, Utility.gameList.ElementAt(i).players.Count()) == group.Count)
                             {
                                 length = Utility.gameList.ElementAt(i).rounds.Count;
-                                round = Utility.gameList.ElementAt(i).rounds.ElementAt(length-1); 
-                                round.group = group;
+                                round = Utility.gameList.ElementAt(i).rounds.ElementAt(length-1);
+                                List<Proposal> proposalList;
+                                for (int y = 0; y < group.Count; y++)
+                                {
+                                    Proposal a = new Proposal();
+                                    a.name = group.ElementAt(y);
+                                    a.psycho = null;
+                                }
+                                round.group = proposalList;
                                 return StatusCode(200, "Group was added to the ongoing round");
                             }
                             else
@@ -182,7 +191,8 @@ namespace vacunadosAPI.Controllers
             else
             {
                 return StatusCode(404, "Invalid game Id");
-            }
+            }*/
+            return StatusCode(404, "Invalid game Id");
         }
 
     }

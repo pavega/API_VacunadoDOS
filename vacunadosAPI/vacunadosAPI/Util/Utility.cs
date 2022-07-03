@@ -24,7 +24,7 @@ namespace vacunadosAPI.Util
             bool exist = false;
             for (int i = 0; i < gameList.Count; i++)
             {
-                if (gameList.ElementAt(i).name == name) { 
+                if (gameList.ElementAt(i).name == name) {
                     exist = true;
                 }
             }
@@ -58,11 +58,11 @@ namespace vacunadosAPI.Util
         }
 
 
-    public static bool groupExists(List<string> group, int position)
+        public static bool groupExists(List<Group> group, int position)
         {
             bool exist = false;
 
-            if (gameList.ElementAt(position).rounds != null)
+            /*if (gameList.ElementAt(position).rounds != null)
             {
                 for (int i = 0; i < gameList.ElementAt(position).rounds.ElementAt(i).group.Count; i++)
                 {
@@ -71,7 +71,7 @@ namespace vacunadosAPI.Util
                         exist = true;
                     }
                 }
-            }       
+            }*/
             return exist;
         }
 
@@ -83,7 +83,7 @@ namespace vacunadosAPI.Util
             {
                 psychosQuantity = 2;
             }
-            else 
+            else
             {
                 if (players == 7 || players == 8 || players == 9)
                 {
@@ -98,7 +98,8 @@ namespace vacunadosAPI.Util
             return psychosQuantity;
         }
 
-        public static List<string> setPsychos(List<string> players) { 
+        public static List<string> setPsychos(List<string> players) {
+
             List<string> psychos = new List<string>();
             int psychosQuantity = getPsychosQuantity(players.Count);
             int index;
