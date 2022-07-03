@@ -43,10 +43,11 @@ namespace vacunadosAPI.Controllers
             newGame.owner = owner;
             newGame.password = gameRequest.password;
             newGame.gameId = matchName;
-            newGame.players = new string[]{ };
+            newGame.players = new List<string>() { owner };
             newGame.psychoWin = new List<bool>();
             newGame.psychos = new List<string>();
             newGame.status = "Lobby";
+            newGame.rounds = new List<Round> { };
             if (Utility.alreadyExist(gameRequest.name))
             {
                 return StatusCode(406, "There is already a game called with this name");
