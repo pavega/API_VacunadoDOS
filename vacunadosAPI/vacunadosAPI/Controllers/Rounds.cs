@@ -42,7 +42,7 @@ namespace vacunadosAPI.Controllers
         [HttpPut("{gameId}/join")]
         [SwaggerOperation(Summary = "Add player to game",
                           Description = "Add player to an arbitrary game")]
-        public async Task<ActionResult<String>> addPlayer([FromRoute] string gameId, [FromHeader] string name, [FromHeader] string password)
+        public async Task<ActionResult<string>> addPlayer([FromRoute] string gameId, [FromHeader] string name, [FromHeader] string password)
         {
             for (int i = 0; i < Utility.gameList.Count; i++)
             {
@@ -104,7 +104,7 @@ namespace vacunadosAPI.Controllers
             {
                 if (Utility.gameList.ElementAt(i).gameId == gameId && Utility.gameList.ElementAt(i).password == password)
                 {
-                    if (Utility.gameList.ElementAt(i).owner == name)
+                    if (Utility.gameList.ElementAt(i).owner == name && Utility.gameList.ElementAt(i).status == "Lobby" && Utility.gameList.ElementAt(i).players.Count > 4)
                     {
                         Utility.gameList.ElementAt(i).status = "Leader";
                         Utility.gameList.ElementAt(i).psychos = Utility.setPsychos(Utility.gameList.ElementAt(i).players);                  
@@ -144,37 +144,26 @@ namespace vacunadosAPI.Controllers
         {
             Round round = new Round();
 
-            /*int length;
             for (int i = 0; i < Utility.gameList.Count; i++)
             {
                 if (Utility.gameList.ElementAt(i).gameId == gameId && Utility.gameList.ElementAt(i).password == password)
                 {
-                    if (!Utility.groupExists(group, i))
+                    Utility.gameList.ElementAt(i).status = "rounds";
+
+                    if (!Utility.groupExists(group, i, Utility.gameList.ElementAt(i).rounds.Count) && Utility.gameList.ElementAt(i).status == "rounds")
                     {
-                        for (int j = 0; j < Utility.gameList.ElementAt(i).rounds.Count; j++)
+                        if (Utility.getRoundGroup(Utility.gameList.ElementAt(i).rounds.Count, Utility.gameList.ElementAt(i).players.Count()) == group.group.Count)
                         {
-                            if (Utility.getRoundGroup(Utility.gameList.ElementAt(i).rounds.Count, Utility.gameList.ElementAt(i).players.Count()) == group.Count)
-                            {
-                                length = Utility.gameList.ElementAt(i).rounds.Count;
-                                round = Utility.gameList.ElementAt(i).rounds.ElementAt(length-1);
-                                List<Proposal> proposalList;
-                                for (int y = 0; y < group.Count; y++)
-                                {
-                                    Proposal a = new Proposal();
-                                    a.name = group.ElementAt(y);
-                                    a.psycho = null;
-                                }
-                                round.group = proposalList;
-                                return StatusCode(200, "Group was added to the ongoing round");
-                            }
-                            else
-                            {
-                                return StatusCode(406, "Game is not in the groups stage or provided group has invalid parameters (size/players)");
-                            }
+                            Utility.gameList.ElementAt(i).rounds.ElementAt(Utility.gameList.ElementAt(i).rounds.Count - 1).group = Utility.setProposalFormat(group);
+
+                            return StatusCode(200, "Group was added to the ongoing round");
                         }
-                                             
+                        else
+                        {
+                            return StatusCode(406, "Game is not in the groups stage or provided group has invalid parameters (size/players)");
+                        }
                     }
-                    return StatusCode(409, "There is already a group added for this round");
+                    return StatusCode(409, "There is already a group added for this round");                            
                 }
             }
             if (Utility.gameExists(gameId))
@@ -191,8 +180,86 @@ namespace vacunadosAPI.Controllers
             else
             {
                 return StatusCode(404, "Invalid game Id");
-            }*/
-            return StatusCode(404, "Invalid game Id");
+            }
+        }
+
+
+        [HttpPost("{gameId}/go")]
+        [SwaggerOperation(Summary = "Go into round",
+                          Description = "If the part of the group, a player can go. Psychos can activate the pysho mode")]
+        public async Task<ActionResult<string>> goIntoRound([FromRoute] string gameId, [FromHeader] string name, [FromHeader] string password, [FromBody] Psycho psychoMode)
+        {
+            Round round = new Round();
+            int length;
+            for (int i = 0; i < Utility.gameList.Count; i++)
+            {
+                if (Utility.gameList.ElementAt(i).gameId == gameId && Utility.gameList.ElementAt(i).password == password)
+                {
+                    if (Utility.inGroupList(name, i))
+                    {
+                        if (Utility.verifyData(psychoMode))
+                        {
+                            Utility.setPsychoMode(name, psychoMode, i, Utility.gameList.ElementAt(i).rounds.Count);
+
+                            bool execute = true;
+                            foreach (var roundTemp in Utility.gameList.ElementAt(i).rounds.Last().group)
+                            {
+                                if (roundTemp.psycho == null)
+                                {
+                                    execute = false;
+                                }
+                            }
+                            if (execute)
+                            {
+                                Utility.gameList.ElementAt(i).psychoWin.Insert(Utility.gameList.ElementAt(i).psychoWin.Count, Utility.getRoundWinner(i, Utility.gameList.ElementAt(i).rounds.Count));
+
+                                if (!Utility.getPsychoWinsQuantity(Utility.gameList.ElementAt(i).psychoWin))
+                                {
+                                    Utility.gameList.ElementAt(i).status = "Leader";
+                                    length = Utility.gameList.ElementAt(i).rounds.Count;
+                                    round.id = length;
+                                    round.leader = Utility.getRoundLeader(Utility.gameList.ElementAt(i).players);
+                                    round.group = new List<Proposal>();
+                                    Utility.gameList.ElementAt(i).rounds.Insert(length, round);
+                                }
+                                else
+                                {
+                                    Utility.gameList.ElementAt(i).status = "ended";
+                                }
+                            }
+                            return StatusCode(200, "Operation successful");
+                        }
+                        else {
+                            return StatusCode(406, "Data provided is invalid");
+                        }                       
+                    }
+                    else 
+                    {
+                        if (!Utility.inGameUser(name))
+                        {
+                            return StatusCode(403, "This player is not part of the indicated game");
+                        }
+
+                        return StatusCode(401, "You are not part of the round group list");
+                    }
+                    
+                }
+            }
+            if (Utility.gameExists(gameId))
+            {
+                if (!Utility.inGameUser(name))
+                {
+                    return StatusCode(403, "This player is not part of the indicated game");
+                }
+                else
+                {
+                    return StatusCode(400, "Credentials does not match");
+                }
+            }
+            else
+            {
+                return StatusCode(404, "Invalid game Id");
+            }
         }
 
     }

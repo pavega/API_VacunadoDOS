@@ -2,6 +2,6 @@
 {
     public class Group
     {
-        public List<String> group { get; set; }
+        public List<string> group { get; set; } = null;
     }
 }
