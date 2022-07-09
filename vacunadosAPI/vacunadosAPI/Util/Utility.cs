@@ -260,14 +260,6 @@ namespace vacunadosAPI.Util
                     {
                         count++;
                     }
-                    //else
-                    //{
-                    //    if (gameList.ElementAt(gameNumber).psychos.Contains(gameList.ElementAt(gameNumber).rounds.ElementAt(roundNumber - 1).group.ElementAt(j).name)
-                    //    && !gameList.ElementAt(gameNumber).psychos.Contains(namePlayer) && psychoMode == true)
-                    //    {
-                    //        count++;
-                    //    }
-                    //}
                 }
             }
             if (count >= 1)
