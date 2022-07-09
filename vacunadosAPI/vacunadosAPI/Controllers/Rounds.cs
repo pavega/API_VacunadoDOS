@@ -5,7 +5,7 @@ using vacunadosAPI.Util;
 
 namespace vacunadosAPI.Controllers
 {
-    [Route("/Rounds/")]
+    [Route("/game/")]
 
     [ApiController]
     public class Rounds : Controller
@@ -104,18 +104,33 @@ namespace vacunadosAPI.Controllers
             {
                 if (Utility.gameList.ElementAt(i).gameId == gameId && Utility.gameList.ElementAt(i).password == password)
                 {
-                    if (Utility.gameList.ElementAt(i).owner == name && Utility.gameList.ElementAt(i).status == "Lobby" && Utility.gameList.ElementAt(i).players.Count > 4)
+                    if (Utility.gameList.ElementAt(i).owner == name)
                     {
-                        Utility.gameList.ElementAt(i).status = "Leader";
-                        Utility.gameList.ElementAt(i).psychos = Utility.setPsychos(Utility.gameList.ElementAt(i).players);                  
-                        length =  Utility.gameList.ElementAt(i).rounds.Count;
-                        round.id = length;
-                        round.leader = Utility.getRoundLeader(Utility.gameList.ElementAt(i).players);
-                        round.group = new List<Proposal>();
-                        Utility.gameList.ElementAt(i).rounds.Insert(length, round);
-                        return StatusCode(200, "Game has started");
+                        if (Utility.gameList.ElementAt(i).players.Count > 4 && Utility.gameList.ElementAt(i).status == "Lobby")
+                        {
+                            Utility.gameList.ElementAt(i).status = "Leader";
+                            Utility.gameList.ElementAt(i).psychos = Utility.setPsychos(Utility.gameList.ElementAt(i).players);
+                            length = Utility.gameList.ElementAt(i).rounds.Count;
+                            round.id = length;
+                            round.leader = Utility.getRoundLeader(Utility.gameList.ElementAt(i).players);
+                            round.group = new List<Proposal>();
+                            Utility.gameList.ElementAt(i).rounds.Insert(length, round);
+                            return StatusCode(200, "Game has started");
+                        }
+                        else 
+                        {
+                            if (Utility.gameList.ElementAt(i).status != "Lobby")
+                            {
+                                return StatusCode(406, "Game already started");
+
+                            }
+                            return StatusCode(406, "Not enough players. Invite more to join");
+                        }                     
                     }
-                    return StatusCode(401, "You are not the game's owner");
+                    else 
+                    {
+                        return StatusCode(401, "You are not the game's owner");
+                    }  
                 }
             }
             if (Utility.gameExists(gameId))
@@ -126,7 +141,7 @@ namespace vacunadosAPI.Controllers
                 }
                 else
                 {
-                    return StatusCode(400, "Credentials does not match");
+                    return StatusCode(401, "Credentials does not match");
                 }
             }
             else
@@ -148,22 +163,35 @@ namespace vacunadosAPI.Controllers
             {
                 if (Utility.gameList.ElementAt(i).gameId == gameId && Utility.gameList.ElementAt(i).password == password)
                 {
-                    Utility.gameList.ElementAt(i).status = "rounds";
-
-                    if (!Utility.groupExists(group, i, Utility.gameList.ElementAt(i).rounds.Count) && Utility.gameList.ElementAt(i).status == "rounds")
+                    if (Utility.roundLeader(name, i))
                     {
-                        if (Utility.getRoundGroup(Utility.gameList.ElementAt(i).rounds.Count, Utility.gameList.ElementAt(i).players.Count()) == group.group.Count)
-                        {
-                            Utility.gameList.ElementAt(i).rounds.ElementAt(Utility.gameList.ElementAt(i).rounds.Count - 1).group = Utility.setProposalFormat(group);
+                        Utility.gameList.ElementAt(i).status = "rounds";
 
-                            return StatusCode(200, "Group was added to the ongoing round");
+                        if (Utility.playersInGame(group, i))
+                        {
+                            if (!Utility.groupExists(group, i, Utility.gameList.ElementAt(i).rounds.Count) && Utility.gameList.ElementAt(i).status == "rounds")
+                            {
+                                if (Utility.getRoundGroup(Utility.gameList.ElementAt(i).rounds.Count, Utility.gameList.ElementAt(i).players.Count()) == group.group.Count)
+                                {
+                                    Utility.gameList.ElementAt(i).rounds.ElementAt(Utility.gameList.ElementAt(i).rounds.Count - 1).group = Utility.setProposalFormat(group);
+
+                                    return StatusCode(200, "Group was added to the ongoing round");
+                                }
+                                else
+                                {
+                                    return StatusCode(406, "Game is not in the groups stage or provided group has invalid parameters (size/players)");
+                                }
+                            }
+                            return StatusCode(409, "There is already a group added for this round");
                         }
                         else
                         {
-                            return StatusCode(406, "Game is not in the groups stage or provided group has invalid parameters (size/players)");
+                            return StatusCode(406, "Not all players belong to this game");
                         }
                     }
-                    return StatusCode(409, "There is already a group added for this round");                            
+                    else {
+                        return StatusCode(403, "You are not the leader for this round");
+                    }                                 
                 }
             }
             if (Utility.gameExists(gameId))
@@ -174,12 +202,12 @@ namespace vacunadosAPI.Controllers
                 }
                 else
                 {
-                    return StatusCode(400, "Credentials does not match");
+                    return StatusCode(401, "Credentials does not match");
                 }
             }
             else
             {
-                return StatusCode(404, "Invalid game Id");
+                return StatusCode(406, "Invalid game Id");
             }
         }
 
@@ -253,7 +281,7 @@ namespace vacunadosAPI.Controllers
                 }
                 else
                 {
-                    return StatusCode(400, "Credentials does not match");
+                    return StatusCode(500, "Incorrect authentication");
                 }
             }
             else

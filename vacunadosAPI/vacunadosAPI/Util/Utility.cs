@@ -63,12 +63,31 @@ namespace vacunadosAPI.Util
             return exist;
         }
 
+        public static bool playersInGame(Group group, int gamePosition)
+        {
+            bool exist = true;
+            int count = 0;
+
+            if (gameList.ElementAt(gamePosition).rounds != null)
+            {
+                foreach (var x in group.group)
+                {
+                    if (!gameList.ElementAt(gamePosition).players.Contains(x))
+                    {
+                        count++;
+                    }
+                }
+                if (count>=1)
+                {
+                    exist = false;
+                }
+            }
+            return exist;
+        }
 
         public static bool groupExists(Group group, int gamePosition, int roundPosition)
         {
             bool exist = false;
-            List<string> playersName = new List<string>();
-            Group groupAux = new Group();
 
             if (gameList.ElementAt(gamePosition).rounds != null)
             {
@@ -86,6 +105,19 @@ namespace vacunadosAPI.Util
             }
             return exist;
         }
+
+        public static bool roundLeader(string name, int gameNumber) {
+
+            bool leader = false;
+
+            if (gameList.ElementAt(gameNumber).rounds.ElementAt(gameList.ElementAt(gameNumber).rounds.Count-1).leader == name)
+            {
+                leader = true;
+            }
+
+            return leader;
+        }
+
 
         public static int getPsychosQuantity(int players)
         {
@@ -224,21 +256,18 @@ namespace vacunadosAPI.Util
                 for (int j = 1; j < gameList.ElementAt(gameNumber).rounds.ElementAt(roundNumber - 1).group.Count; j++)
                 {
                     if (gameList.ElementAt(gameNumber).psychos.Contains(namePlayer) && psychoMode == true
-                        && !gameList.ElementAt(gameNumber).psychos.Contains(gameList.ElementAt(gameNumber).rounds.ElementAt(roundNumber - 1).group.ElementAt(j).name)
-                        && gameList.ElementAt(gameNumber).rounds.ElementAt(roundNumber - 1).group.ElementAt(j).psycho == true)
+                        && !gameList.ElementAt(gameNumber).psychos.Contains(gameList.ElementAt(gameNumber).rounds.ElementAt(roundNumber - 1).group.ElementAt(j).name))
                     {
                         count++;
                     }
-                    else
-                    {
-                        if (gameList.ElementAt(gameNumber).psychos.Contains(gameList.ElementAt(gameNumber).rounds.ElementAt(roundNumber - 1).group.ElementAt(j).name)
-                        && gameList.ElementAt(gameNumber).rounds.ElementAt(roundNumber - 1).group.ElementAt(j).psycho == true
-                        && !gameList.ElementAt(gameNumber).psychos.Contains(namePlayer)
-                        && psychoMode == true)
-                        {
-                            count++;
-                        }
-                    }
+                    //else
+                    //{
+                    //    if (gameList.ElementAt(gameNumber).psychos.Contains(gameList.ElementAt(gameNumber).rounds.ElementAt(roundNumber - 1).group.ElementAt(j).name)
+                    //    && !gameList.ElementAt(gameNumber).psychos.Contains(namePlayer) && psychoMode == true)
+                    //    {
+                    //        count++;
+                    //    }
+                    //}
                 }
             }
             if (count >= 1)
