@@ -240,7 +240,7 @@ namespace vacunadosAPI.Controllers
                             if (execute)
                             {
                                 Utility.gameList.ElementAt(i).psychoWin.Insert(Utility.gameList.ElementAt(i).psychoWin.Count, Utility.getRoundWinner(i, Utility.gameList.ElementAt(i).rounds.Count));
-
+                                Utility.gameList.ElementAt(i).rounds.ElementAt(Utility.gameList.ElementAt(i).rounds.Count-1).winner = Utility.getWinner(i, Utility.gameList.ElementAt(i).rounds.Count);
                                 if (!Utility.getPsychoWinsQuantity(Utility.gameList.ElementAt(i).psychoWin))
                                 {
                                     Utility.gameList.ElementAt(i).status = "Leader";

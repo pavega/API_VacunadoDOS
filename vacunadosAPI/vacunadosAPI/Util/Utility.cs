@@ -244,30 +244,33 @@ namespace vacunadosAPI.Util
         public static bool getRoundWinner(int gameNumber, int roundNumber)
         {
             bool psychoWins = false;
-            string namePlayer = "";
-            bool? psychoMode = false;
             int count = 0;
 
-            for (int i = 0; i < gameList.ElementAt(gameNumber).rounds.ElementAt(roundNumber - 1).group.Count; i++)
+            foreach (var i in gameList.ElementAt(gameNumber).rounds.ElementAt(roundNumber-1).group)
             {
-                namePlayer = gameList.ElementAt(gameNumber).rounds.ElementAt(roundNumber - 1).group.ElementAt(i).name;
-                psychoMode = gameList.ElementAt(gameNumber).rounds.ElementAt(roundNumber - 1).group.ElementAt(i).psycho;
-
-                for (int j = 1; j < gameList.ElementAt(gameNumber).rounds.ElementAt(roundNumber - 1).group.Count; j++)
-                {
-                    if (gameList.ElementAt(gameNumber).psychos.Contains(namePlayer) && psychoMode == true
-                        && !gameList.ElementAt(gameNumber).psychos.Contains(gameList.ElementAt(gameNumber).rounds.ElementAt(roundNumber - 1).group.ElementAt(j).name))
-                    {
-                        count++;
-                    }
+                if (gameList.ElementAt(gameNumber).psychos.Contains(i.name) && i.psycho == true) {
+                    count++;
                 }
             }
             if (count >= 1)
             {
                 psychoWins = true;
             }
-
             return psychoWins;
+        }
+
+        public static string getWinner(int gameNumber, int roundNumber) {
+            string winner = "";
+
+            if (getRoundWinner(gameNumber, roundNumber))
+            {
+                winner = "psychos";
+            }
+            else
+            {
+                winner = "ejemplares";
+            }
+            return winner;
         }
 
         public static bool getPsychoWinsQuantity(List<bool> psychoWins)

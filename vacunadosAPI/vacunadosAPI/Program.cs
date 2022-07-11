@@ -14,22 +14,47 @@ builder.Services.AddSwaggerGen(c =>
     c.EnableAnnotations();
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
 });
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("GetAllPolicy",
+      builder =>
+      {
+          builder.AllowAnyOrigin()
+                 .AllowAnyHeader()
+                 .AllowAnyMethod();//PUT, PATCH, GET, DELETE
+      });
+});
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseSwagger();
+//    app.UseSwaggerUI();
+//}
+
+//Configure the HTTP request pipeline.
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "vacunaDOS API V1");
+    c.RoutePrefix = string.Empty;
+});
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseDeveloperExceptionPage();
 }
 
 app.UseHttpsRedirection();
 
+app.UseAuthorization();
+
 app.UseRouting();
 
-app.UseCors("AllowOrigin");
-
-app.UseAuthorization();
+app.UseCors("GetAllPolicy");
 
 app.MapControllers();
 
