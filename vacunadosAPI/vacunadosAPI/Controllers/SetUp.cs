@@ -36,14 +36,14 @@ namespace vacunadosAPI.Controllers
         [SwaggerOperation(Summary = "Create new game",
                          Description = "Create a new game. A header 'name' should be used to indicate the game owner and identity to use forward")]
         [HttpPost("create")]
-        public async Task<ActionResult<Game>> create([FromHeader]string owner, [FromBody]NewGameRequest gameRequest) {
+        public async Task<ActionResult<Game>> create([FromHeader]string name, [FromBody]NewGameRequest gameRequest) {
             String matchName = Utility.generateRandomString();
             Game newGame = new Game();
             newGame.name = gameRequest.name;
-            newGame.owner = owner;
+            newGame.owner = name;
             newGame.password = gameRequest.password;
             newGame.gameId = matchName;
-            newGame.players = new List<string>() { owner };
+            newGame.players = new List<string>() { name };
             newGame.psychoWin = new List<bool>();
             newGame.psychos = new List<string>();
             newGame.status = "Lobby";
