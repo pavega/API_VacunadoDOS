@@ -42,8 +42,11 @@ namespace vacunadosAPI.Controllers
         [HttpPut("{gameId}/join")]
         [SwaggerOperation(Summary = "Add player to game",
                           Description = "Add player to an arbitrary game")]
-        public async Task<ActionResult<string>> addPlayer([FromRoute] string gameId, [FromHeader] string name, [FromHeader] string password)
+        public async Task<ActionResult<Message>> addPlayer([FromRoute] string gameId, [FromHeader] string name, [FromHeader] string password)
         {
+            Message message = new Message();
+            ErrorMessage error = new ErrorMessage();
+
             for (int i = 0; i < Utility.gameList.Count; i++)
             {
                 if (Utility.gameList.ElementAt(i).gameId == gameId && Utility.gameList.ElementAt(i).password == password)
@@ -53,22 +56,27 @@ namespace vacunadosAPI.Controllers
 
                         if (Utility.gameList.ElementAt(i).players.Count < 10 && Utility.gameList.ElementAt(i).status == "Lobby")
                         {                       
-                            string message = "Operation Successfull";
+                            
                             int length = Utility.gameList.ElementAt(i).players.Count;
                             if (length < 10)
                             {
                                 Utility.gameList.ElementAt(i).players.Insert(length, name);
                             }
+                            message.message = "Operation Successfull";
                             return message;
                         }
                         else
                         {
-                            return StatusCode(406, "Game has already started or is full");
+                            this.HttpContext.Response.StatusCode = 406;
+                            error.error = "Game has already started or is full";
+                            return Json(error);
                         }
                     }
                     else
                     {
-                        return StatusCode(409, "You are already part of this game");
+                        this.HttpContext.Response.StatusCode = 409;
+                        error.error = "You are already part of this game";
+                        return Json(error);
                     }
                 }
             }
@@ -77,16 +85,22 @@ namespace vacunadosAPI.Controllers
             {
                 if (!Utility.inGameUser(name))
                 {
-                    return StatusCode(403, "This player is not part of the indicated game");
+                    this.HttpContext.Response.StatusCode = 403;
+                    error.error = "This player is not part of the indicated game";
+                    return Json(error);
                 }
                 else
                 {
-                    return StatusCode(400, "Credentials does not match");
+                    this.HttpContext.Response.StatusCode = 401;
+                    error.error = "Credentials does not match";
+                    return Json(error);
                 }
             }
             else
             {
-                return StatusCode(404, "Invalid game Id");
+                this.HttpContext.Response.StatusCode = 404;
+                error.error = "Invalid game Id";
+                return Json(error);
             }
         }
 

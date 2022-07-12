@@ -36,8 +36,9 @@ namespace vacunadosAPI.Controllers
         [SwaggerOperation(Summary = "Create new game",
                          Description = "Create a new game. A header 'name' should be used to indicate the game owner and identity to use forward")]
         [HttpPost("create")]
-        public async Task<ActionResult<Game>> create([FromHeader]string name, [FromBody]NewGameRequest gameRequest) {
-            String matchName = Utility.generateRandomString();
+        public async Task<ActionResult<Game>> create([FromHeader] string name, [FromBody]NewGameRequest gameRequest) {
+            ErrorMessage error = new ErrorMessage();
+            string matchName = Utility.generateRandomString();
             Game newGame = new Game();
             newGame.name = gameRequest.name;
             newGame.owner = name;
@@ -50,7 +51,9 @@ namespace vacunadosAPI.Controllers
             newGame.rounds = new List<Round> { };
             if (Utility.alreadyExist(gameRequest.name))
             {
-                return StatusCode(406, "There is already a game called with this name");
+                this.HttpContext.Response.StatusCode = 404;
+                error.error = "There is already a game called with this name";
+                return Json(error);
             }
             else {
                 Utility.gameList.Add(newGame);
