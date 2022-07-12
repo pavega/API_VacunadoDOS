@@ -289,14 +289,7 @@ namespace vacunadosAPI.Controllers
             }
             if (Utility.gameExists(gameId))
             {
-                if (!Utility.inGameUser(name))
-                {
-                    return StatusCode(403, "This player is not part of the indicated game");
-                }
-                else
-                {
-                    return StatusCode(500, "Incorrect authentication");
-                }
+                return StatusCode(500, "Incorrect authentication");
             }
             else
             {

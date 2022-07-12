@@ -240,6 +240,7 @@ namespace vacunadosAPI.Util
             }
 
         }
+        
 
         public static bool getRoundWinner(int gameNumber, int roundNumber)
         {
@@ -248,9 +249,14 @@ namespace vacunadosAPI.Util
 
             foreach (var i in gameList.ElementAt(gameNumber).rounds.ElementAt(roundNumber-1).group)
             {
-                if (gameList.ElementAt(gameNumber).psychos.Contains(i.name) && i.psycho == true) {
-                    count++;
-                }
+                for (int j = 1; j < gameList.ElementAt(gameNumber).rounds.ElementAt(roundNumber - 1).group.Count; j++)
+                {
+                    if (gameList.ElementAt(gameNumber).psychos.Contains(i.name) && i.psycho == true && 
+                        !gameList.ElementAt(gameNumber).psychos.Contains(gameList.ElementAt(gameNumber).rounds.ElementAt(roundNumber - 1).group.ElementAt(j).name))
+                    {
+                        count++;
+                    }
+                }    
             }
             if (count >= 1)
             {
