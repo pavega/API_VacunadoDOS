@@ -17,24 +17,40 @@ namespace vacunadosAPI.Controllers
         [HttpGet("{gameId}")]
         [SwaggerOperation(Summary = "Extract an arbitrary game",
                           Description = "Extract information for an arbitrary game. Please notice this is the same as using gameId filters on /")]
-        public async Task<ActionResult<Game>> gameId([FromRoute] string gameId, [FromHeader] string name, [FromHeader] string password) {
+        public async Task<ActionResult<Game>> gameId([FromRoute] string gameId, [FromHeader] string name, [FromHeader] string? password) {
+            ErrorMessage error = new ErrorMessage();
+            int? temp = null;
             for (int i = 0; i < Utility.gameList.Count; i++) {
-                if (Utility.gameList.ElementAt(i).gameId == gameId && Utility.gameList.ElementAt(i).name == name && Utility.gameList.ElementAt(i).password == password) {
+
+                if (Utility.gameList.ElementAt(i).gameId == gameId /*&& Utility.gameList.ElementAt(i).owner == name*/) {
+
+                    if (Utility.gameList.ElementAt(i).password != "" && Utility.gameList.ElementAt(i).password != password)
+                    {
+                        this.HttpContext.Response.StatusCode = 401;
+                        error.error = "Credentials does not match";
+                        return Json(error);
+                    }
+                    temp = i;
                     return Utility.gameList[i];
                 }
+
             }
             if (Utility.gameExists(gameId))
             {
-                if (!Utility.inGameUser(name))
+                if (temp != null)
                 {
-                    return StatusCode(403, "This player is not part of the indicated game");
+                    return Utility.gameList[temp.Value];
                 }
                 else {
-                    return StatusCode(400, "Credentials does not match");
+                    this.HttpContext.Response.StatusCode = 403;
+                    error.error = "This player is not part of the indicated game";
+                    return Json(error);
                 }
             }
             else {
-                return StatusCode(404, "Invalid game Id");
+                this.HttpContext.Response.StatusCode = 404;
+                error.error = "Invalid game Id";
+                return Json(error);
             }        
         }
 
@@ -42,19 +58,25 @@ namespace vacunadosAPI.Controllers
         [HttpPut("{gameId}/join")]
         [SwaggerOperation(Summary = "Add player to game",
                           Description = "Add player to an arbitrary game")]
-        public async Task<ActionResult<Message>> addPlayer([FromRoute] string gameId, [FromHeader] string name, [FromHeader] string password)
+        public async Task<ActionResult<Message>> addPlayer([FromRoute] string gameId, [FromHeader] string name, [FromHeader] string? password)
         {
             Message message = new Message();
             ErrorMessage error = new ErrorMessage();
 
             for (int i = 0; i < Utility.gameList.Count; i++)
             {
-                if (Utility.gameList.ElementAt(i).gameId == gameId && Utility.gameList.ElementAt(i).password == password)
+                if (Utility.gameList.ElementAt(i).gameId == gameId)
                 {
+                    if (Utility.gameList.ElementAt(i).password != "" && Utility.gameList.ElementAt(i).password != password)
+                    {
+                        this.HttpContext.Response.StatusCode = 401;
+                        error.error = "Credentials does not match";
+                        return Json(error);
 
-                    if (!Utility.inGameUser(name)) {
+                    }
+                    if (!Utility.inGameUser(i, name)) {
 
-                        if (Utility.gameList.ElementAt(i).players.Count < 10 && Utility.gameList.ElementAt(i).status == "Lobby")
+                        if (Utility.gameList.ElementAt(i).players.Count < 10 && Utility.gameList.ElementAt(i).status == "lobby")
                         {                       
                             
                             int length = Utility.gameList.ElementAt(i).players.Count;
@@ -82,19 +104,11 @@ namespace vacunadosAPI.Controllers
             }
 
             if (Utility.gameExists(gameId))
-            {
-                if (!Utility.inGameUser(name))
-                {
-                    this.HttpContext.Response.StatusCode = 403;
-                    error.error = "This player is not part of the indicated game";
-                    return Json(error);
-                }
-                else
-                {
-                    this.HttpContext.Response.StatusCode = 401;
-                    error.error = "Credentials does not match";
-                    return Json(error);
-                }
+            {            
+                this.HttpContext.Response.StatusCode = 403;
+                error.error = "This player is not part of the indicated game";
+                return Json(error);
+               
             }
             else
             {
@@ -110,57 +124,71 @@ namespace vacunadosAPI.Controllers
         [HttpHead("{gameId}/start")]
         [SwaggerOperation(Summary = "Starts the game",
                           Description = "If you are the game owners, it will start the game")]
-        public async Task<ActionResult<Game>> startGame([FromRoute] string gameId, [FromHeader] string name, [FromHeader] string password)
+        public async Task<ActionResult<Message>> startGame([FromRoute] string gameId, [FromHeader] string name, [FromHeader] string? password)
         {
+            Message message = new Message();
+            ErrorMessage error = new ErrorMessage();
+
             int length;
             Round round = new Round();
             for (int i = 0; i < Utility.gameList.Count; i++)
             {
-                if (Utility.gameList.ElementAt(i).gameId == gameId && Utility.gameList.ElementAt(i).password == password)
+                if (Utility.gameList.ElementAt(i).gameId == gameId)
                 {
+                    if (Utility.gameList.ElementAt(i).password != "" && Utility.gameList.ElementAt(i).password != password)
+                    {
+                        this.HttpContext.Response.StatusCode = 401;
+                        error.error = "Credentials does not match";
+                        return Json(error);
+                    }
+
                     if (Utility.gameList.ElementAt(i).owner == name)
                     {
-                        if (Utility.gameList.ElementAt(i).players.Count > 4 && Utility.gameList.ElementAt(i).status == "Lobby")
+                        if (Utility.gameList.ElementAt(i).players.Count > 4 && Utility.gameList.ElementAt(i).status == "lobby")
                         {
-                            Utility.gameList.ElementAt(i).status = "Leader";
+                            Utility.gameList.ElementAt(i).status = "leader";
                             Utility.gameList.ElementAt(i).psychos = Utility.setPsychos(Utility.gameList.ElementAt(i).players);
                             length = Utility.gameList.ElementAt(i).rounds.Count;
                             round.id = length;
                             round.leader = Utility.getRoundLeader(Utility.gameList.ElementAt(i).players);
                             round.group = new List<Proposal>();
                             Utility.gameList.ElementAt(i).rounds.Insert(length, round);
-                            return StatusCode(200, "Game has started");
+                            message.message = "Game has started";
+                            return message;
                         }
                         else 
                         {
-                            if (Utility.gameList.ElementAt(i).status != "Lobby")
+                            if (Utility.gameList.ElementAt(i).status != "lobby")
                             {
-                                return StatusCode(406, "Game already started");
+                                this.HttpContext.Response.StatusCode = 406;
+                                error.error = "Game already started";
+                                return Json(error);
 
                             }
-                            return StatusCode(406, "Not enough players. Invite more to join");
+                            this.HttpContext.Response.StatusCode = 406;
+                            error.error = "Not enough players. Invite more to join";
+                            return Json(error);
                         }                     
                     }
                     else 
                     {
-                        return StatusCode(401, "You are not the game's owner");
+                        this.HttpContext.Response.StatusCode = 401;
+                        error.error = "You are not the game's owner";
+                        return Json(error);
                     }  
                 }
             }
             if (Utility.gameExists(gameId))
             {
-                if (!Utility.inGameUser(name))
-                {
-                    return StatusCode(403, "This player is not part of the indicated game");
-                }
-                else
-                {
-                    return StatusCode(401, "Credentials does not match");
-                }
+                this.HttpContext.Response.StatusCode = 403;
+                error.error = "This player is not part of the indicated game";
+                return Json(error);
             }
             else
             {
-                return StatusCode(404, "Invalid game Id");
+                this.HttpContext.Response.StatusCode = 404;
+                error.error = "Invalid game Id";
+                return Json(error);
             }
         }
 
@@ -169,14 +197,23 @@ namespace vacunadosAPI.Controllers
         [HttpPost("{gameId}/group")]
         [SwaggerOperation(Summary = "Group proposal",
                           Description = "The round leader can propose a group for the current round")]
-        public async Task<ActionResult<Game>> createGroup([FromRoute] string gameId, [FromHeader] string name, [FromHeader] string password, [FromBody] Group group)
+        public async Task<ActionResult<Message>> createGroup([FromRoute] string gameId, [FromHeader] string name, [FromHeader] string? password, [FromBody] Group group)
         {
+            Message message = new Message();
+            ErrorMessage error = new ErrorMessage();
             Round round = new Round();
 
             for (int i = 0; i < Utility.gameList.Count; i++)
             {
-                if (Utility.gameList.ElementAt(i).gameId == gameId && Utility.gameList.ElementAt(i).password == password)
+                if (Utility.gameList.ElementAt(i).gameId == gameId)
                 {
+                    if (Utility.gameList.ElementAt(i).password != "" && Utility.gameList.ElementAt(i).password != password)
+                    {
+                        this.HttpContext.Response.StatusCode = 401;
+                        error.error = "Credentials does not match";
+                        return Json(error);
+
+                    }
                     if (Utility.roundLeader(name, i))
                     {
                         Utility.gameList.ElementAt(i).status = "rounds";
@@ -189,54 +226,61 @@ namespace vacunadosAPI.Controllers
                                 {
                                     Utility.gameList.ElementAt(i).rounds.ElementAt(Utility.gameList.ElementAt(i).rounds.Count - 1).group = Utility.setProposalFormat(group);
 
-                                    return StatusCode(200, "Group was added to the ongoing round");
+                                    message.message = "Group was added to the ongoing round";
+                                    return message;
                                 }
                                 else
                                 {
-                                    return StatusCode(406, "Game is not in the groups stage or provided group has invalid parameters (size/players)");
+                                    this.HttpContext.Response.StatusCode = 406;
+                                    error.error = "Game is not in the groups stage or provided group has invalid parameters (size/players)";
+                                    return Json(error);
                                 }
                             }
-                            return StatusCode(409, "There is already a group added for this round");
+                            this.HttpContext.Response.StatusCode = 409;
+                            error.error = "There is already a group added for this round";
+                            return Json(error);
                         }
                         else
                         {
-                            return StatusCode(406, "Not all players belong to this game");
+                            this.HttpContext.Response.StatusCode = 406;
+                            error.error = "Not all players belong to this game";
+                            return Json(error);
                         }
                     }
                     else {
-                        return StatusCode(403, "You are not the leader for this round");
+                        this.HttpContext.Response.StatusCode = 403;
+                        error.error = "You are not the leader for this round";
+                        return Json(error);
                     }                                 
                 }
             }
-            if (Utility.gameExists(gameId))
-            {
-                if (!Utility.inGameUser(name))
-                {
-                    return StatusCode(403, "This player is not part of the indicated game");
-                }
-                else
-                {
-                    return StatusCode(401, "Credentials does not match");
-                }
-            }
-            else
-            {
-                return StatusCode(406, "Invalid game Id");
-            }
+            this.HttpContext.Response.StatusCode = 406;
+            error.error = "Invalid game Id";
+            return Json(error);
         }
 
 
         [HttpPost("{gameId}/go")]
         [SwaggerOperation(Summary = "Go into round",
                           Description = "If the part of the group, a player can go. Psychos can activate the pysho mode")]
-        public async Task<ActionResult<string>> goIntoRound([FromRoute] string gameId, [FromHeader] string name, [FromHeader] string password, [FromBody] Psycho psychoMode)
+        public async Task<ActionResult<Message>> goIntoRound([FromRoute] string gameId, [FromHeader] string name, [FromHeader] string? password, [FromBody] Psycho psychoMode)
         {
+            Message message = new Message();
+            ErrorMessage error = new ErrorMessage();
             Round round = new Round();
             int length;
             for (int i = 0; i < Utility.gameList.Count; i++)
             {
-                if (Utility.gameList.ElementAt(i).gameId == gameId && Utility.gameList.ElementAt(i).password == password)
+                if (Utility.gameList.ElementAt(i).gameId == gameId)
                 {
+                    if (Utility.gameList.ElementAt(i).password != "" && Utility.gameList.ElementAt(i).password != password)
+                    {
+                        this.HttpContext.Response.StatusCode = 500;
+                        error.error = "Credentials does not match";
+                        return Json(error);
+
+                    }
+
                     if (Utility.inGroupList(name, i))
                     {
                         if (Utility.verifyData(psychoMode))
@@ -255,9 +299,10 @@ namespace vacunadosAPI.Controllers
                             {
                                 Utility.gameList.ElementAt(i).psychoWin.Insert(Utility.gameList.ElementAt(i).psychoWin.Count, Utility.getRoundWinner(i, Utility.gameList.ElementAt(i).rounds.Count));
                                 Utility.gameList.ElementAt(i).rounds.ElementAt(Utility.gameList.ElementAt(i).rounds.Count-1).winner = Utility.getWinner(i, Utility.gameList.ElementAt(i).rounds.Count);
-                                if (!Utility.getPsychoWinsQuantity(Utility.gameList.ElementAt(i).psychoWin))
+
+                                if (Utility.getPsychoWinsQuantity(Utility.gameList.ElementAt(i).psychoWin) == null)
                                 {
-                                    Utility.gameList.ElementAt(i).status = "Leader";
+                                    Utility.gameList.ElementAt(i).status = "leader";
                                     length = Utility.gameList.ElementAt(i).rounds.Count;
                                     round.id = length;
                                     round.leader = Utility.getRoundLeader(Utility.gameList.ElementAt(i).players);
@@ -269,33 +314,33 @@ namespace vacunadosAPI.Controllers
                                     Utility.gameList.ElementAt(i).status = "ended";
                                 }
                             }
-                            return StatusCode(200, "Operation successful");
+                            message.message = "Operation successful";
+                            return message;
                         }
                         else {
-                            return StatusCode(406, "Data provided is invalid");
+                            this.HttpContext.Response.StatusCode = 406;
+                            error.error = "Data provided is invalid";
+                            return Json(error);
                         }                       
                     }
                     else 
                     {
-                        if (!Utility.inGameUser(name))
+                        if (!Utility.inGameUser(i, name))
                         {
-                            return StatusCode(403, "This player is not part of the indicated game");
+                            this.HttpContext.Response.StatusCode = 403;
+                            error.error = "This player is not part of the indicated game";
+                            return Json(error);
                         }
-
-                        return StatusCode(401, "You are not part of the round group list");
+                        this.HttpContext.Response.StatusCode = 401;
+                        error.error = "You are not part of the round group list";
+                        return Json(error);
                     }
                     
                 }
             }
-            if (Utility.gameExists(gameId))
-            {
-                return StatusCode(500, "Incorrect authentication");
-            }
-            else
-            {
-                return StatusCode(404, "Invalid game Id");
-            }
+            this.HttpContext.Response.StatusCode = 404;
+            error.error = "Invalid game Id";
+            return Json(error);
         }
-
     }
 }

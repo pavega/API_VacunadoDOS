@@ -49,10 +49,10 @@ namespace vacunadosAPI.Util
         }
 
 
-        public static bool inGameUser(string playerName)
+        public static bool inGameUser(int gameNumber, string playerName)
         {
             bool exist = false;
-            List<string> actualPlayers = gameList.ElementAt(tempVar).players;
+            List<string> actualPlayers = gameList.ElementAt(gameNumber).players;
             for (int i = 0; i < actualPlayers.Count; i++)
             {
                 if (actualPlayers[i] == playerName)
@@ -251,8 +251,7 @@ namespace vacunadosAPI.Util
             {
                 for (int j = 1; j < gameList.ElementAt(gameNumber).rounds.ElementAt(roundNumber - 1).group.Count; j++)
                 {
-                    if (gameList.ElementAt(gameNumber).psychos.Contains(i.name) && i.psycho == true && 
-                        !gameList.ElementAt(gameNumber).psychos.Contains(gameList.ElementAt(gameNumber).rounds.ElementAt(roundNumber - 1).group.ElementAt(j).name))
+                    if (gameList.ElementAt(gameNumber).psychos.Contains(i.name) && i.psycho == true)
                     {
                         count++;
                     }
@@ -279,20 +278,31 @@ namespace vacunadosAPI.Util
             return winner;
         }
 
-        public static bool getPsychoWinsQuantity(List<bool> psychoWins)
+        public static bool? getPsychoWinsQuantity(List<bool> psychoWins)
         {
-            bool wins = false;
-            int count = 0;
+            bool? wins = null;
+            int countTrue = 0;
+            int countFalse = 0;
             foreach (bool w in psychoWins)
             {
                 if (w == true)
                 {
-                    count++;
+                    countTrue++;
                 }
+                else
+                {
+                    countFalse++;
+                }
+
             }
-            if (count==3)
+            if (countTrue == 3)
             {
                 wins = true;
+            }
+
+            if (countFalse == 3)
+            {
+                wins = false;
             }
 
             return wins;

@@ -18,13 +18,14 @@ namespace vacunadosAPI.Controllers
 
             if (filter == null || filter == "")
             {
-                if (Utility.gameList.Count == 0)
-                {
-                    return null;
-                }
-                else {
-                    return Utility.gameList.ToList();
-                }
+                return Utility.gameList.ToList();
+                //if (Utility.gameList.Count == 0)
+                //{
+                //    return null;
+                //}
+                //else {
+                //    return Utility.gameList.ToList();
+                //}
             }
 
             return null;
@@ -42,12 +43,19 @@ namespace vacunadosAPI.Controllers
             Game newGame = new Game();
             newGame.name = gameRequest.name;
             newGame.owner = name;
-            newGame.password = gameRequest.password;
+            if (gameRequest.password == "" || gameRequest.password == null)
+            {
+                newGame.password = "";
+            }
+            else
+            {
+                newGame.password = gameRequest.password;
+            }
             newGame.gameId = matchName;
             newGame.players = new List<string>() { name };
             newGame.psychoWin = new List<bool>();
             newGame.psychos = new List<string>();
-            newGame.status = "Lobby";
+            newGame.status = "lobby";
             newGame.rounds = new List<Round> { };
             if (Utility.alreadyExist(gameRequest.name))
             {
