@@ -14,18 +14,11 @@ namespace vacunadosAPI.Controllers
         [SwaggerOperation(Summary = "list all games", 
                           Description = "List all games. Query strings can be used to indicate filters to be applied on the server side.")]
         [HttpGet()]
-        public async Task<ActionResult<List<Game>>> game(string? filter, string? filterValue) {
-
+        public async Task<ActionResult<List<GameHeader>>> game(string? filter, string? filterValue) {
             if (filter == null || filter == "")
             {
-                return Utility.gameList.ToList();
-                //if (Utility.gameList.Count == 0)
-                //{
-                //    return null;
-                //}
-                //else {
-                //    return Utility.gameList.ToList();
-                //}
+
+                return Utility.gameHeaderList.ToList();
             }
 
             return null;
@@ -41,6 +34,7 @@ namespace vacunadosAPI.Controllers
             ErrorMessage error = new ErrorMessage();
             string matchName = Utility.generateRandomString();
             Game newGame = new Game();
+            GameHeader gameHeader = new GameHeader();
             newGame.name = gameRequest.name;
             newGame.owner = name;
             if (gameRequest.password == "" || gameRequest.password == null)
@@ -57,6 +51,9 @@ namespace vacunadosAPI.Controllers
             newGame.psychos = new List<string>();
             newGame.status = "lobby";
             newGame.rounds = new List<Round> { };
+            gameHeader.gameId = newGame.gameId;
+            gameHeader.name = newGame.name;
+       
             if (Utility.alreadyExist(gameRequest.name))
             {
                 this.HttpContext.Response.StatusCode = 404;
@@ -65,6 +62,7 @@ namespace vacunadosAPI.Controllers
             }
             else {
                 Utility.gameList.Add(newGame);
+                Utility.gameHeaderList.Add(gameHeader);
                 return newGame;
             }
           

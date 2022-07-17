@@ -5,6 +5,7 @@ namespace vacunadosAPI.Util
     public static class Utility
     {
         public static List<Game> gameList = new List<Game>();
+        public static List<GameHeader> gameHeaderList = new List<GameHeader>();
         public static int tempVar = 0; //Will save temporal values
 
         public static String generateRandomString()
