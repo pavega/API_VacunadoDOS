@@ -15,13 +15,51 @@ namespace vacunadosAPI.Controllers
                           Description = "List all games. Query strings can be used to indicate filters to be applied on the server side.")]
         [HttpGet()]
         public async Task<ActionResult<List<GameHeader>>> game(string? filter, string? filterValue) {
-            if (filter == null || filter == "")
-            {
+            GameHeader game = new GameHeader();
+            List<GameHeader> filteredGames = new List<GameHeader>();
 
-                return Utility.gameHeaderList.ToList();
+            switch (filter){
+                case "gameId":
+                    for (int i = 0; i < Utility.gameList.Count; i++)
+                    {
+                        if (Utility.gameList.ElementAt<Game>(i).gameId == filterValue)
+                        {
+                            game.gameId = filterValue;
+                            game.name = Utility.gameList.ElementAt<Game>(i).name;
+                            filteredGames.Add(game);
+                        }
+                    }
+                break;
+                case "owner":
+                    for (int i = 0; i < Utility.gameList.Count; i++)
+                    {
+                        if (Utility.gameList.ElementAt<Game>(i).owner == filterValue)
+                        {
+                            game.gameId = filterValue;
+                            game.name = Utility.gameList.ElementAt<Game>(i).name;
+                            filteredGames.Add(game);
+                        }
+                    }
+                break;
+                case "status":
+                    for (int i = 0; i < Utility.gameList.Count; i++)
+                    {
+                        if (Utility.gameList.ElementAt<Game>(i).status == filterValue)
+                        {
+                            game.gameId = filterValue;
+                            game.name = Utility.gameList.ElementAt<Game>(i).name;
+                            filteredGames.Add(game);
+                        }
+                    }
+                break;
+                case null:
+                case "--":
+                    filteredGames = Utility.gameHeaderList;
+                break;
             }
 
-            return null;
+            return filteredGames;
+
         }
 
 
