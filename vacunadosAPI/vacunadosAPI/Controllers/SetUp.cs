@@ -24,7 +24,7 @@ namespace vacunadosAPI.Controllers
                     {
                         if (Utility.gameList.ElementAt<Game>(i).gameId == filterValue)
                         {
-                            game.gameId = filterValue;
+                            game.gameId = Utility.gameList.ElementAt<Game>(i).gameId;
                             game.name = Utility.gameList.ElementAt<Game>(i).name;
                             filteredGames.Add(game);
                         }
@@ -35,7 +35,7 @@ namespace vacunadosAPI.Controllers
                     {
                         if (Utility.gameList.ElementAt<Game>(i).owner == filterValue)
                         {
-                            game.gameId = filterValue;
+                            game.gameId = Utility.gameList.ElementAt<Game>(i).gameId;
                             game.name = Utility.gameList.ElementAt<Game>(i).name;
                             filteredGames.Add(game);
                         }
@@ -46,7 +46,7 @@ namespace vacunadosAPI.Controllers
                     {
                         if (Utility.gameList.ElementAt<Game>(i).status == filterValue)
                         {
-                            game.gameId = filterValue;
+                            game.gameId = Utility.gameList.ElementAt<Game>(i).gameId;
                             game.name = Utility.gameList.ElementAt<Game>(i).name;
                             filteredGames.Add(game);
                         }
